@@ -5,26 +5,20 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Hambuger from "./Hambuger";
 import AppContext from "../context/AppContext";
-
 import HeaderSearch from "./HeaderSearch";
-
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
+
 const Header = () => {
   const [menuToggle, setMenuToggle] = useState(false);
-  const [userProfile, setUserProfile] = useState([]);
   const router = useRouter();
   const { pathname } = router;
-  const {
-    theme,
-    connectWallet,
-    currentAccount,
-
-    changeTheme,
-  } = useContext(AppContext);
+  const { theme, connectWallet, currentAccount, changeTheme } =
+    useContext(AppContext);
   useEffect(() => {
     setMenuToggle(false);
   }, [pathname]);
+
   return (
     <StyledHeader menuToggle={menuToggle} theme_={theme}>
       <motion.div className="left">
@@ -44,17 +38,25 @@ const Header = () => {
             Organizations
           </Link>
         </div>
+        <div className="link">
+          <Link
+            href="/minter"
+            className={pathname == "/minter" ? "active" : ""}
+          >
+            Minter
+          </Link>
+        </div>
 
         <div className="link"></div>
         <HeaderSearch />
       </div>
       <motion.div className="right">
-        <button onClick={() => router.push("/create-nft")}>
-          Create Record
+        <button onClick={() => router.push("/create-organization")}>
+          Create Org
         </button>
         {currentAccount ? (
           <div className="link">
-            <Link href={`/profile/${currentAccount}`}>Profile</Link>
+            <Link href={`/profile`}>Profile</Link>
           </div>
         ) : (
           <button onClick={() => connectWallet()} className="secondary-btn">
@@ -91,12 +93,12 @@ const Header = () => {
             </div>
 
             <HeaderSearch />
-            <button onClick={() => router.push("/create-nft")}>
-              Create Record
+            <button onClick={() => router.push("/create-organization")}>
+              Create Org
             </button>
             {currentAccount ? (
               <div className="link">
-                <Link href={`/profile/${currentAccount}`}>Profile</Link>
+                <Link href={`/profile`}>Profile</Link>
               </div>
             ) : (
               <button onClick={() => connectWallet()} className="secondary-btn">
@@ -171,11 +173,11 @@ const StyledHeader = styled(motion.div)<{
     a {
       font-size: 1.2rem;
       &:hover {
-        color: #0592ec;
+        color: #a52a2a;
       }
     }
     .active {
-      color: #0592ec;
+      color: #a52a2a;
     }
   }
   .right {
@@ -231,7 +233,7 @@ const StyledHeader = styled(motion.div)<{
       a {
         font-size: 1.3rem;
         &:hover {
-          color: #0592ec;
+          color: #a52a2a;
         }
       }
     }

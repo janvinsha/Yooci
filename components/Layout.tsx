@@ -9,6 +9,7 @@ import WalletConnect from "@walletconnect/web3-provider";
 import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 import styled from "styled-components";
 import { motion } from "framer-motion";
+import { v4 as uuid } from "uuid";
 import Header from "./Header";
 
 import AppContext from "../context/AppContext";
@@ -18,7 +19,9 @@ import { Wallet, providers } from "ethers";
 import { connect } from "@tableland/sdk";
 
 import { create } from "ipfs-http-client";
+import yoociContract from "../contracts/yoociContract.json";
 
+const YOOCI_ADDRESS = "0xe3aF62eF372f66f66B38b7b13Fae84e9F5912574";
 const projectId = process.env.NEXT_PUBLIC_INFURA_PROJECT_ID;
 const projectSecret = process.env.NEXT_PUBLIC_INFURA_PROJECT_SECRET;
 
@@ -38,8 +41,8 @@ interface Props {
 }
 
 const uauthOptions: UAuthWeb3Modal.IUAuthOptions = {
-  clientID: "d14e4742-45ab-409c-a538-61928156ddba",
-  redirectUri: "https://kasuwa-hackfs.vercel.app",
+  clientID: "62308199-81a7-4592-bbce-e597fddfb122",
+  redirectUri: "https://yooci.vercel.app",
   scope: "openid wallet",
 };
 
@@ -93,8 +96,8 @@ const privateKey = process.env.NEXT_PUBLIC_WALLET_PRIVATE_KEY;
 const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 const tblWallet = new Wallet(privateKey);
 const tblProvider = new providers.AlchemyProvider("maticmum", alchemyKey);
-const usersTable = "users_80001_361";
-const listingsTable = "orderListings_80001_665";
+const usersTable = "users_80001_2084";
+const organizationsTable = "organizations_80001_2138";
 const Layout = ({ children }: Props) => {
   console.log(
     process.env.NEXT_PUBLIC_WALLET_PRIVATE_KEY,
@@ -206,14 +209,14 @@ const Layout = ({ children }: Props) => {
       if (!getResponse[0]) {
         console.log("CREATING BECAUSE NO USER FOUND", profile);
         const writeTx = await tbl.write(
-          `INSERT INTO ${usersTable} VALUES ('${profile.id}', '${profile.bio}', '${profile.handle}','${profile.dp}','${profile.banner}')`
+          `INSERT INTO ${usersTable} VALUES ('${profile.id}', '${profile.bio}', '${profile.handle}','${profile.dp}','${profile.banner}',Organizations='${profile.organizations}',Verified='false')`
         );
         console.log(writeTx);
         return writeTx;
       } else {
         console.log("UPDATING BECAUSE USER FOUND", profile);
         const writeTx = await tbl.write(`UPDATE ${usersTable}
-        SET Handle='${profile.handle}', Bio='${profile.bio}', Dp='${profile.dp}', Banner='${profile.banner}'
+        SET Handle='${profile.handle}', Bio='${profile.bio}', Dp='${profile.dp}', Banner='${profile.banner}',Organizations='${profile.organizations}',
         WHERE id = '${profile.id}'`);
         console.log(writeTx);
         return writeTx;
@@ -222,62 +225,135 @@ const Layout = ({ children }: Props) => {
       console.log(error);
     }
   };
+  const changeAccess = async (organizations) => {
+    try {
+      console.log("UPDATING PROFILE.................");
+      const signer = tblWallet.connect(tblProvider);
+      const tbl = await connect({ signer });
 
-  const getListings = async () => {
+      const writeTx = await tbl.write(`UPDATE ${usersTable}
+        SET Organizations='${JSON.stringify(organizations)}'`);
+      console.log(writeTx);
+      return writeTx;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getRecord = async (address) => {
+    const wallet = await web3Modal.connect();
+    const tProvider = new ethers.providers.Web3Provider(wallet);
+    try {
+      const signer = tProvider.getSigner();
+      const connectedContract = new ethers.Contract(
+        YOOCI_ADDRESS,
+        yoociContract.abi,
+        signer
+      );
+      let tx = await connectedContract.getRecord(address);
+
+      return tx;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const createTable = async () => {
+    try {
+      console.log("CREATING TABLE ..........");
+
+      const signer = tblWallet.connect(tblProvider);
+
+      const tbl = await connect({ signer });
+
+      console.log(tbl, "THIS IS THE TBL");
+
+      // const { name, txnHash } = await tbl.create(
+      //   `id text,bio text, handle text, dp text, banner text, organizations text, verified text, primary key (id)`, // Table schema definition
+      //   `users` // Optional prefix; used to define a human-readable string
+      // );
+
+      const { name, txnHash } = await tbl.create(
+        `id text, name text,description text,dp text,banner text, address text,patients text,verified text,owner text, primary key (id)`, // Table schema definition
+        `organizations` // Optional prefix; used to define a human-readable string
+      );
+
+      console.log(name, txnHash, "HERE IS THE RESPONSE");
+    } catch (error) {
+      console.log(error, "THIS IS THE ERROR ");
+    }
+  };
+
+  const getOrganizations = async () => {
     try {
       const signer = tblWallet.connect(tblProvider);
       const tbl = await connect({ signer });
-      const { rows } = await tbl.read(`SELECT * FROM ${listingsTable}`);
+      const { rows } = await tbl.read(`SELECT * FROM ${organizationsTable}`);
       console.log(rows);
       return rows;
     } catch (err) {
       console.log(err);
     }
   };
-  const getListing = async (id) => {
-    try {
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const { rows } = await tbl.read(
-        `SELECT * FROM ${listingsTable} WHERE id = '${id}'`
-      );
-      console.log(rows, "TRYING TO GET THE LISTING");
-      return rows;
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  const createListings = async (listing) => {
+  const createOrganization = async (organization) => {
+    const unique_id = uuid();
+
     try {
       const signer = tblWallet.connect(tblProvider);
       const tbl = await connect({ signer });
       const writeTx = await tbl.write(
-        `INSERT INTO ${listingsTable} VALUES ('${listing.id}', '${listing.orderJson}', '${listing.offers}','${listing.considerations}')`
+        `INSERT INTO ${organizationsTable} VALUES ('${unique_id.toString()}', '${
+          organization.name
+        }', '${organization.description}','${organization.dp}','${
+          organization.banner
+        }','${organization.address}','','false','${organization.owner}')`
       );
       console.log(writeTx);
     } catch (err) {
       console.log(err);
     }
   };
-  const createTable = async () => {
+  const createRecord = async (tokenURI) => {
+    const wallet = await web3Modal.connect();
+    const tProvider = new ethers.providers.Web3Provider(wallet);
     try {
-      console.log("CREATING TABLE ..........");
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      console.log(tbl, "THIS IS THE TBL");
-      const { name, txnHash } = await tbl.create(
-        `id text, name text,image text,owner text,decription text, price text, startDate text,endDate text, primary key (id)`, // Table schema definition
-        `collections` // Optional prefix; used to define a human-readable string
+      const signer = tProvider.getSigner();
+      const connectedContract = new ethers.Contract(
+        YOOCI_ADDRESS,
+        yoociContract.abi,
+        signer
       );
-      // const { name, txnHash } = await tbl.create(
-      //   `id text,bio text, handle text,dp text, banner text, primary key (id)`, // Table schema definition
-      //   `users` // Optional prefix; used to define a human-readable string
-      // );
-
-      console.log(name, txnHash, "HERE IS THE RESPONSE");
+      let tx = await connectedContract.createRecord(tokenURI);
+      console.log("RECORDD CREATED HEERE", tx);
+      return tx;
     } catch (error) {
-      console.log(error, "THIS IS THE ERROR ");
+      console.log(error);
     }
+  };
+  const updateRecord = async (tokenURI) => {
+    const wallet = await web3Modal.connect();
+    const tProvider = new ethers.providers.Web3Provider(wallet);
+    try {
+      const signer = tProvider.getSigner();
+      const connectedContract = new ethers.Contract(
+        YOOCI_ADDRESS,
+        yoociContract.abi,
+        signer
+      );
+      let tx = await connectedContract.updateRecord(tokenURI);
+      console.log("RECORDD UPDATED HEERE", tx);
+      return tx;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const verifyUser = async (account) => {
+    const signer = tblWallet.connect(tblProvider);
+    const tbl = await connect({ signer });
+    const writeTx = await tbl.write(`UPDATE ${usersTable}
+    SET Verified='true',
+    WHERE id = '${account}'`);
+    console.log(writeTx);
+    return writeTx;
   };
   return (
     <StyledLayout>
@@ -291,8 +367,12 @@ const Layout = ({ children }: Props) => {
           createTable,
           getProfile,
           updateProfile,
-          getListings,
-          getListing,
+          getRecord,
+          createOrganization,
+          getOrganizations,
+          createRecord,
+          updateRecord,
+          verifyUser,
         }}
       >
         <GlobalStyle theme={theme} />

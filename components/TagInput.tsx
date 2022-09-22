@@ -157,7 +157,7 @@ const StyledTagInput = styled(motion.div)`
         .asterik {
           display: block;
           margin-left: 0.2vw;
-          color: #0592ec;
+          color: #a52a2a;
         }
         .optional {
           margin-left: 0.2vw;
@@ -229,7 +229,7 @@ const StyledTagInput = styled(motion.div)`
       padding-right: 5px;
       border: none;
       border-radius: 0.2rem;
-      background-color: #0592ec;
+      background-color: #a52a2a;
       white-space: nowrap;
       color: white;
       button {

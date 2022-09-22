@@ -21,10 +21,10 @@ button{
     font-family: 'Rubik', sans-serif;
   cursor:pointer;
   color:white;
-  background:#0592ec;
+  background:#A52A2A;
   border:none;
   border-radius:2rem;
-  border:2px solid #0592ec;
+  border:2px solid #A52A2A;
   padding:0.4rem 1.4rem;
   font-size:1.2rem;
   border-radius:0.5rem;
@@ -38,7 +38,7 @@ button{
 .secondary-btn{
     cursor:pointer;
   background:inherit;
-  border:2px solid #0592ec;
+  border:2px solid #A52A2A;
   border-radius:0.4rem;
 padding:0.4rem 1.4rem;
   font-size:1.2rem;
@@ -53,12 +53,12 @@ padding:0.4rem 1.4rem;
    align-items:center;
   background:none;
   gap:0.5rem;
-  border:2px solid #0592ec;
+  border:2px solid #A52A2A;
 padding:0.4rem 1.4rem;
   border-radius:0.4rem;
   color:${({ theme }) => (theme ? "white" : "black")};
     img{  
-        background:#0592ec;
+        background:#A52A2A;
         width:1.5rem;
         height:1.5rem;
         border-radius:50%;

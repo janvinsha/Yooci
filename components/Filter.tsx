@@ -91,7 +91,7 @@ const StyledFilter = styled(motion.div)<{ theme_: boolean }>`
     .asterik {
       display: block;
       margin-left: 0.2vw;
-      color: #0592ec;
+      color: #a52a2a;
     }
     .hide {
       display: none;

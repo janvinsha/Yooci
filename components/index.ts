@@ -10,3 +10,5 @@ export { default as Textarea } from "./Textarea";
 export { default as UserNftCard } from "./UserNftCard";
 export { default as OrganizationCard } from "./OrganizationCard";
 export { default as EditProfileModal } from "./EditProfileModal";
+export { default as EditOrgModal } from "./EditOrgModal";
+export { default as AccessModal } from "./AccessModal";

@@ -18,7 +18,6 @@ const UserNftCard = ({ nft, clickNft }: Props) => {
       {nft?.external_data?.image?.endsWith("mp4") ? (
         <video
           controls={false}
-          controlsList="nodownload"
           loop
           autoPlay={true}
           preload="true"
@@ -33,14 +32,6 @@ const UserNftCard = ({ nft, clickNft }: Props) => {
       <div className="nft-desc">
         <span className="nft_title">
           <h4>{nft?.external_data?.name}</h4>
-        </span>
-
-        <span className="nft_btn">
-          {nft?.owner == currentAccount?.toLowerCase() && (
-            <button className="secondary-btn" onClick={clickNft}>
-              List Nft
-            </button>
-          )}
         </span>
       </div>
     </StyledUserNftCard>

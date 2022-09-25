@@ -66,7 +66,7 @@ const CreateListing = () => {
 
     try {
       let photo = await client.add(dp);
-      let photoUrl = `https://kasuwa.infura-ipfs.io/ipfs/${photo.path}`;
+      let photoUrl = `https://yooci.infura-ipfs.io/ipfs/${photo.path}`;
       let result = await client.add(
         JSON.stringify({
           name: name,
@@ -87,8 +87,8 @@ const CreateListing = () => {
         "https://api.nftport.xyz/v0/mints/customizable",
         {
           chain: "polygon",
-          contract_address: "0x0F2b3C8A55bA4074D23F839a17307330D9D0788B",
-          metadata_uri: `https://kasuwa.infura-ipfs.io/ipfs/${result.path}`,
+          contract_address: "0x52c28ae81b6243aac76c2d40bd0261814a3384ac",
+          metadata_uri: `https://yooci.infura-ipfs.io/ipfs/${result.path}`,
           mint_to_address: `${currentAccount}`,
         },
         config

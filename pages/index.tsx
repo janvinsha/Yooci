@@ -5,18 +5,48 @@ import { motion } from "framer-motion";
 import styled from "styled-components";
 
 import AppContext from "../context/AppContext";
+import Lottie from "react-lottie";
+import homeData from "../public/animations/home.json";
 
 export default function Home() {
   const router = useRouter();
 
   const { theme } = useContext(AppContext);
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: homeData,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
 
-  return <StyledHome theme_={theme}></StyledHome>;
+  return (
+    <StyledHome theme_={theme}>
+      <div className="desc">
+        <h2>
+          Yooci is blockchain application that utilizes Nfts to store health
+          records that are only accessible to the owner or organizations given
+          access to by the user
+        </h2>
+        <h3>Yooci is the future</h3>
+        <button
+          className="plain-btn"
+          onClick={() => router.push("/create-organization")}
+        >
+          Create Org
+        </button>
+      </div>
+      <div className="nft-desc">
+        <Lottie options={defaultOptions} height={500} width={"100%"} />
+      </div>
+    </StyledHome>
+  );
 }
 const StyledHome = styled(motion.div)<{ theme_: boolean }>`
   display: flex;
   flex-flow: column wrap;
-
+align-items:center;
   width: 100%;
 
   padding: 2rem 6rem;
@@ -31,7 +61,7 @@ const StyledHome = styled(motion.div)<{ theme_: boolean }>`
     justify-content: center;
     text-align: center;
     gap: 0rem;
-
+width:70%;
     h2 {
       font-weight: medium;
     }
@@ -135,22 +165,7 @@ const StyledHome = styled(motion.div)<{ theme_: boolean }>`
       }
     }
 
-    .nfts {
-      width: 100%;
-      padding: 2rem 0rem;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-column-gap: 1rem;
-      grid-row-gap: 1rem;
-      @media screen and (max-width: 900px) {
-        grid-template-columns: repeat(1 1fr);
-        grid-column-gap: 0.5rem;
-        grid-row-gap: 0.5rem;
-        width: 100%;
-        padding: 0rem 0rem;
-      }
-    }
-  }
+
   .about {
     width: 100%;
 

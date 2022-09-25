@@ -15,21 +15,22 @@ const OrganizationCard = ({ organization }) => {
   return (
     <StyledOrganizationCard
       theme_={theme}
-      onClick={() => router.push(`/organizations/${organization?.[0]}`)}
+      onClick={() =>
+        router.push(`/organizations/${organization?.[0] || "5729"}`)
+      }
     >
-      <img src={organization?.[3]} alt="img" />
+      <img src={organization?.[3] || "/images/yooci.png"} alt="img" />
       <div className="nft-desc">
         <span className="title">
-          <h3>{organization?.[1]}</h3>
+          <h3>{organization?.[1] || "Yooci"}</h3>
           <h4></h4>
         </span>
 
         <span className="sale">
           <span className="author">
-            {" "}
             <p>
-              {" "}
-              {organization?.[9]?.slice(0, 4)}...{organization?.[9]?.slice(-4)}
+              {organization?.[9]?.slice(0, 4) || "0x87b0B98"}...
+              {organization?.[9]?.slice(-4) || "C24eee1Ce"}
             </p>{" "}
           </span>{" "}
           <p>Owner</p>

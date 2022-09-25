@@ -15,6 +15,7 @@ import {
   EditProfileModal,
   Loader,
   Input,
+  AccessModal,
 } from "../components";
 import { verify } from "crypto";
 const projectId = process.env.NEXT_PUBLIC_INFURA_PROJECT_ID;
@@ -31,6 +32,7 @@ const client = create({
     authorization: auth,
   },
 });
+
 const WorldIDWidget = dynamic<WidgetProps>(
   () => import("@worldcoin/id").then((mod) => mod.WorldIDWidget),
   { ssr: false }
@@ -49,7 +51,7 @@ export default function Profile() {
     disconnectWallet,
     createTable,
     getProfile,
-    chainId,
+
     getRecord,
     createRecord,
     updateRecord,
@@ -59,6 +61,7 @@ export default function Profile() {
   const [clickedNft, setClickedNft] = useState();
 
   const [profileModal, setProfileModal] = useState(false);
+  const [accessModal, setAccessModal] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [foundUser, setFoundUser] = useState([]);
   const [contractRecords, setContractRecords] = useState();
@@ -72,7 +75,7 @@ export default function Profile() {
   const [viewRecord, setViewRecord] = useState(false);
 
   const getProfileNfts = async () => {
-    // let chainId = 137;
+    let chainId = 137;
 
     if (currentAccount) {
       const { data } = await axios.get(
@@ -146,10 +149,7 @@ export default function Profile() {
       record?.tokenURI
     );
   };
-  const clickNft = (nft) => {
-    setClickedNft(nft);
-    console.log("THIS IS THE CLICKED NFT", nft);
-  };
+
   console.log("THIS IS THE FOUND USER", foundUser);
   const createHandler = async (e) => {
     e.preventDefault();
@@ -234,7 +234,10 @@ export default function Profile() {
             </div>
             <div className="dpBtns">
               {currentAccount && (
-                <button className="secondary-btn" onClick={() => createTable()}>
+                <button
+                  className="secondary-btn"
+                  onClick={() => disconnectWallet()}
+                >
                   Disconnect
                 </button>
               )}
@@ -285,14 +288,6 @@ export default function Profile() {
                 User Nfts
                 <div className="line"></div>
               </span>
-              <span
-                className={`tab ${activeTab === "Organizations" && "active"}`}
-                key="index"
-                onClick={() => setActiveTab("Organizations")}
-              >
-                Organizations
-                <div className="line"></div>
-              </span>
             </span>
             <div className="section_2">
               {activeTab === "Health Records" ? (
@@ -303,8 +298,10 @@ export default function Profile() {
                         <button onClick={() => setViewRecord(!viewRecord)}>
                           View Health Record
                         </button>
-                        <button>Print Health Record</button>{" "}
-                        <button>Control Access</button>
+
+                        <button onClick={() => setAccessModal(true)}>
+                          Control Access
+                        </button>
                       </div>
                       {viewRecord ? (
                         <div className="view_record">
@@ -407,15 +404,24 @@ export default function Profile() {
                     </div>
                   )}
                 </div>
+              ) : activeTab === "User Nfts" ? (
+                <div className="cards">
+                  {userNfts?.map((nft, i) => (
+                    <UserNftCard nft={nft} key={i} />
+                  ))}
+                </div>
               ) : (
-                listings?.map((listing, i) => (
-                  <NftCard listing={listing} key={i} />
-                ))
+                ""
               )}
             </div>
           </div>
         </div>
 
+        <AccessModal
+          show={accessModal}
+          onClose={() => setAccessModal(false)}
+          user={foundUser}
+        />
         <EditProfileModal
           show={profileModal}
           onClose={() => setProfileModal(false)}
@@ -620,6 +626,22 @@ const StyledProfile = styled(motion.div)<{ theme_: boolean }>`
   }
   .section_2 {
     width: 100%;
+    .cards {
+      width: 100%;
+      padding: 2rem 0rem;
+
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-column-gap: 1.5rem;
+      grid-row-gap: 1.5rem;
+      @media screen and (max-width: 900px) {
+        grid-template-columns: repeat(1, 1fr);
+        grid-column-gap: 0.5rem;
+        grid-row-gap: 0.5rem;
+        width: 100%;
+        padding: 1rem 0rem;
+      }
+    }
     .records {
       width: 100%;
       .active {

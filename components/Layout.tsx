@@ -11,17 +11,15 @@ import styled from "styled-components";
 import { motion } from "framer-motion";
 import { v4 as uuid } from "uuid";
 import Header from "./Header";
-
 import AppContext from "../context/AppContext";
 import { GlobalStyle } from "../components";
-
 import { Wallet, providers } from "ethers";
 import { connect } from "@tableland/sdk";
-
 import { create } from "ipfs-http-client";
 import yoociContract from "../contracts/yoociContract.json";
 
 const YOOCI_ADDRESS = "0xe3aF62eF372f66f66B38b7b13Fae84e9F5912574";
+const YOOCI_SKALE_ADDRESS = "0x483B7167F4aA81FFF2AAB4c7A1cc9a9079A562Dd";
 const projectId = process.env.NEXT_PUBLIC_INFURA_PROJECT_ID;
 const projectSecret = process.env.NEXT_PUBLIC_INFURA_PROJECT_SECRET;
 
@@ -97,7 +95,7 @@ const alchemyKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 const tblWallet = new Wallet(privateKey);
 const tblProvider = new providers.AlchemyProvider("maticmum", alchemyKey);
 const usersTable = "users_80001_2084";
-const organizationsTable = "organizations_80001_2138";
+const organizationsTable = "organizations_80001_3007";
 const Layout = ({ children }: Props) => {
   console.log(
     process.env.NEXT_PUBLIC_WALLET_PRIVATE_KEY,
@@ -202,6 +200,10 @@ const Layout = ({ children }: Props) => {
 
   const updateProfile = async (profile) => {
     try {
+      // const { name, txnHash } = await tbl.create(
+      //   `id text,bio text, handle text, dp text, banner text, organizations text, verified text, primary key (id)`, // Table schema definition
+      //   `users` // Optional prefix; used to define a human-readable string
+      // );
       console.log("UPDATING PROFILE.................");
       const signer = tblWallet.connect(tblProvider);
       const tbl = await connect({ signer });
@@ -209,14 +211,14 @@ const Layout = ({ children }: Props) => {
       if (!getResponse[0]) {
         console.log("CREATING BECAUSE NO USER FOUND", profile);
         const writeTx = await tbl.write(
-          `INSERT INTO ${usersTable} VALUES ('${profile.id}', '${profile.bio}', '${profile.handle}','${profile.dp}','${profile.banner}',Organizations='${profile.organizations}',Verified='false')`
+          `INSERT INTO ${usersTable} VALUES ('${profile.id}', '${profile.bio}', '${profile.handle}','${profile.dp}','${profile.banner}','','false')`
         );
         console.log(writeTx);
         return writeTx;
       } else {
         console.log("UPDATING BECAUSE USER FOUND", profile);
         const writeTx = await tbl.write(`UPDATE ${usersTable}
-        SET Handle='${profile.handle}', Bio='${profile.bio}', Dp='${profile.dp}', Banner='${profile.banner}',Organizations='${profile.organizations}',
+        SET Handle='${profile.handle}', Bio='${profile.bio}', Dp='${profile.dp}', Banner='${profile.banner}',
         WHERE id = '${profile.id}'`);
         console.log(writeTx);
         return writeTx;
@@ -260,18 +262,13 @@ const Layout = ({ children }: Props) => {
   const createTable = async () => {
     try {
       console.log("CREATING TABLE ..........");
-
       const signer = tblWallet.connect(tblProvider);
-
       const tbl = await connect({ signer });
-
       console.log(tbl, "THIS IS THE TBL");
-
       // const { name, txnHash } = await tbl.create(
       //   `id text,bio text, handle text, dp text, banner text, organizations text, verified text, primary key (id)`, // Table schema definition
       //   `users` // Optional prefix; used to define a human-readable string
       // );
-
       const { name, txnHash } = await tbl.create(
         `id text, name text,description text,dp text,banner text, address text,patients text,verified text,owner text, primary key (id)`, // Table schema definition
         `organizations` // Optional prefix; used to define a human-readable string
@@ -288,15 +285,48 @@ const Layout = ({ children }: Props) => {
       const signer = tblWallet.connect(tblProvider);
       const tbl = await connect({ signer });
       const { rows } = await tbl.read(`SELECT * FROM ${organizationsTable}`);
-      console.log(rows);
+      console.log(
+        "THESE ARE THE ORGANIZATIONSSSSSJJJSSKKEEEELLOOERRPPPOOOO",
+        rows
+      );
       return rows;
     } catch (err) {
       console.log(err);
     }
   };
+  const getOrganization = async (orgId) => {
+    try {
+      const signer = tblWallet.connect(tblProvider);
+      const tbl = await connect({ signer });
+      const { rows } = await tbl.read(
+        `SELECT * FROM ${organizationsTable} WHERE id =$${orgId}`
+      );
+      console.log(
+        "THESE ARE THE ORGANIZATIONSSSJJJSSKKEEEELLOOERRPPPOOOO",
+        rows
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const updateOrganization = async (organization) => {
+    try {
+      const signer = tblWallet.connect(tblProvider);
+      const tbl = await connect({ signer });
+      const writeTx = await tbl.write(`UPDATE ${organizationsTable}
+    SET Name='${organization.name}', Dp='${organization.dp}', Banner='${organization.banner}',
+    WHERE id = '${organization.id}'`);
+      console.log(writeTx);
+      return writeTx;
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const createOrganization = async (organization) => {
     const unique_id = uuid();
-
+    console.log(organization, "THIS IS THE ORGANIZATION");
     try {
       const signer = tblWallet.connect(tblProvider);
       const tbl = await connect({ signer });
@@ -307,6 +337,7 @@ const Layout = ({ children }: Props) => {
           organization.banner
         }','${organization.address}','','false','${organization.owner}')`
       );
+
       console.log(writeTx);
     } catch (err) {
       console.log(err);
@@ -355,6 +386,16 @@ const Layout = ({ children }: Props) => {
     console.log(writeTx);
     return writeTx;
   };
+
+  const verifyOrganization = async (account) => {
+    const signer = tblWallet.connect(tblProvider);
+    const tbl = await connect({ signer });
+    const writeTx = await tbl.write(`UPDATE ${organizationsTable}
+    SET Verified='true',
+    WHERE id = '${account}'`);
+    console.log(writeTx);
+    return writeTx;
+  };
   return (
     <StyledLayout>
       <AppContext.Provider
@@ -370,9 +411,12 @@ const Layout = ({ children }: Props) => {
           getRecord,
           createOrganization,
           getOrganizations,
+          getOrganization,
           createRecord,
           updateRecord,
           verifyUser,
+          verifyOrganization,
+          updateOrganization,
         }}
       >
         <GlobalStyle theme={theme} />
@@ -383,4 +427,5 @@ const Layout = ({ children }: Props) => {
   );
 };
 const StyledLayout = styled(motion.div)``;
+
 export default Layout;

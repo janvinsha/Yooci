@@ -81,11 +81,11 @@ const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
       let tempUrl;
       if (dp) {
         photo = await client.add(dp);
-        photoUrl = `https://kasuwa.infura-ipfs.io/ipfs/${photo.path}`;
+        photoUrl = `https://yooci.infura-ipfs.io/ipfs/${photo.path}`;
       }
       if (cover) {
         banner = await client.add(cover);
-        bannerUrl = `https://kasuwa.infura-ipfs.io/ipfs/${banner.path}`;
+        bannerUrl = `https://yooci.infura-ipfs.io/ipfs/${banner.path}`;
       }
 
       console.log("IPFS OBJECT", banner, photo);
@@ -99,11 +99,11 @@ const EditProfileModal = ({ show, onClose, user, setEditingProfile }) => {
         banner:
           bannerUrl ||
           user?.[4] ||
-          "https://kasuwa.infura-ipfs.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
+          "https://yooci.infura-ipfs.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
         dp:
           photoUrl ||
           user?.[3] ||
-          "https://kasuwa.infura-ipfs.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
+          "https://yooci.infura-ipfs.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
         handle: name || "Comrade",
         bio: bio || "WAGMI",
       });

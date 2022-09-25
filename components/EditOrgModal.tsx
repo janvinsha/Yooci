@@ -26,12 +26,15 @@ const client = create({
     authorization: auth,
   },
 });
-
-const AccessModal = ({ show, onClose, user, setEditingProfile }) => {
-  const { theme, currentAccount } = useContext(AppContext);
-  const [name, setName] = useState(user?.[2]);
-
-  const [bio, setBio] = useState(user?.[1]);
+const EditOrgModal = ({ show, onClose, org, setEditingProfile }) => {
+  const {
+    theme,
+    updateProfile,
+    currentAccount,
+    updateOrganization,
+    editingProfile,
+  } = useContext(AppContext);
+  const [name, setName] = useState(org?.[2]);
   const [dp, setDp] = useState();
   const [cover, setCover] = useState();
   const hiddenCoverInput = React.useRef(null);
@@ -66,6 +69,7 @@ const AccessModal = ({ show, onClose, user, setEditingProfile }) => {
       );
     }
   };
+  org;
   const editProfileHandler = async (e) => {
     e.preventDefault();
     try {
@@ -89,18 +93,17 @@ const AccessModal = ({ show, onClose, user, setEditingProfile }) => {
       console.log("IPFS UPLOAD FILE PHOTOURL", photoUrl);
       // console.log('FILES ARE HERE', files, dpFiles);
       setEditingProfile(true);
-      updateProfile({
+      updateOrganization({
         id: `${currentAccount}`,
         banner:
           bannerUrl ||
-          user?.[4] ||
+          org?.[4] ||
           "https://yooci.infura-ipfs.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
         dp:
           photoUrl ||
-          user?.[3] ||
+          org?.[3] ||
           "https://yooci.infura-ipfs.io/ipfs/QmTnLF4RnkuDL2yT8VawLTXKE4L5Px5uYnxtj6dNSF97q4",
-        handle: name || "Comrade",
-        bio: bio || "WAGMI",
+        name: name || "Comrade",
       });
       notify({ title: "Profile edited successfully", type: "success" });
       setEditingProfile(false);
@@ -117,12 +120,44 @@ const AccessModal = ({ show, onClose, user, setEditingProfile }) => {
     <Modal
       show={show}
       onClose={onClose}
-      title="Access Modal"
+      title="Edit Organization"
       modalStyle={{ height: "auto" }}
     >
-      <Loader />
-      <StyledAccessModal theme_={theme}>
+      <Loader visible={editingProfile} />
+      <StyledEditOrgModal theme_={theme}>
         <div>
+          <div className="photo-cont">
+            <img
+              src={cover ? cover.preview : org?.[4] || "/images/swing.jpeg"}
+              className="cover"
+              alt="img"
+            />{" "}
+            <span className="dp">
+              <img
+                src={dp ? dp.preview : org?.[3] || "/images/swing.jpeg"}
+                className="cover"
+                alt="img"
+              />
+              {dp ? (
+                <button className="dp-edit" onClick={() => setDp()}>
+                  <CloseIcon />
+                </button>
+              ) : (
+                <button className="dp-edit" onClick={handleDpClick}>
+                  <EditIcon />
+                </button>
+              )}
+            </span>
+            {cover ? (
+              <button className="cover-edit" onClick={() => setCover()}>
+                <CloseIcon />
+              </button>
+            ) : (
+              <button className="cover-edit" onClick={handleCoverClick}>
+                <EditIcon />
+              </button>
+            )}
+          </div>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -131,24 +166,28 @@ const AccessModal = ({ show, onClose, user, setEditingProfile }) => {
             label="Name"
             theme={theme}
           />
-          <Textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Bio"
-            name="Bio"
-            label="Bio"
-            maxLength="50"
-            theme={theme}
-          />
+
           <span>
             <button onClick={editProfileHandler}>Submit</button>
           </span>
         </div>
-      </StyledAccessModal>
+        <input
+          type="file"
+          ref={hiddenDpInput}
+          onChange={uploadDpHandler}
+          style={{ display: "none" }}
+        />
+        <input
+          type="file"
+          ref={hiddenCoverInput}
+          onChange={uploadCoverHandler}
+          style={{ display: "none" }}
+        />
+      </StyledEditOrgModal>
     </Modal>
   );
 };
-const StyledAccessModal = styled.div`
+const StyledEditOrgModal = styled.div`
   padding: 2rem 0rem;
   display: flex;
   flex-direction: column;
@@ -298,4 +337,4 @@ const StyledAccessModal = styled.div`
   padding: 1rem;
 `;
 
-export default AccessModal;
+export default EditOrgModal;

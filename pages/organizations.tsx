@@ -6,7 +6,7 @@ import Filter from "../components/Filter";
 import { OrganizationCard } from "../components";
 import AppContext from "../context/AppContext";
 
-export default function Listings() {
+export default function Organizations() {
   const [sortBy, setSortBy] = useState("");
   const [organizations, setOrganizations] = useState();
   const { theme, getOrganizations } = useContext(AppContext);
@@ -17,9 +17,10 @@ export default function Listings() {
 
   const getData = async () => {
     const tempOrganizations = await getOrganizations();
+    console.log("HERE ARE THE ORGANIZATIONS OOOooooooooooo", tempOrganizations);
     setOrganizations(tempOrganizations);
-    console.log("HERE ARE THE LISTINGS OOOooooooooooo", tempOrganizations);
   };
+  let organizationz = [{}];
   return (
     <StyledOrganizations theme_={theme}>
       <div className="main">
@@ -31,7 +32,7 @@ export default function Listings() {
         </div>
 
         <div className="cards">
-          {organizations?.map((organization: any, i) => (
+          {organizationz?.map((organization: any, i) => (
             <OrganizationCard organization={organization} key={i} />
           ))}
         </div>
@@ -39,12 +40,11 @@ export default function Listings() {
     </StyledOrganizations>
   );
 }
+
 const StyledOrganizations = styled(motion.div)<{ theme_: boolean }>`
   display: flex;
   flex-flow: column wrap;
-
   width: 100%;
-
   padding: 2rem 4rem;
   gap: 2rem;
   @media screen and (max-width: 900px) {

@@ -18,7 +18,7 @@ import { Wallet, providers } from "ethers";
 import { connect } from "@tableland/sdk";
 import { create } from "ipfs-http-client";
 import yoociContract from "../contracts/yoociContract.json";
-
+import notify from "../hooks/notification";
 const YOOCI_ADDRESS = "0xe3aF62eF372f66f66B38b7b13Fae84e9F5912574";
 const YOOCI_SKALE_ADDRESS = "0x483B7167F4aA81FFF2AAB4c7A1cc9a9079A562Dd";
 const projectId = process.env.NEXT_PUBLIC_INFURA_PROJECT_ID;
@@ -197,7 +197,6 @@ const Layout = ({ children }: Props) => {
       console.log(err), "THIS IS THE ERROR";
     }
   };
-
   const updateProfile = async (profile) => {
     try {
       const signer = tblWallet.connect(tblProvider);
@@ -225,7 +224,7 @@ const Layout = ({ children }: Props) => {
         const { meta: update } = await db
           .prepare(
             `UPDATE 
-            ${usersTable} SET bio = ?2, handle = ?3, dp = ?4, banner = 5? WHERE id = ?1'`
+            ${usersTable} SET bio = ?2, handle = ?3, dp = ?4, banner = ?5 WHERE id = ?1`
           )
           .bind(
             profile.id,
@@ -248,20 +247,7 @@ const Layout = ({ children }: Props) => {
     }
   };
 
-  const changeAccess = async (organizations) => {
-    try {
-      console.log("UPDATING PROFILE.................");
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-
-      const writeTx = await tbl.write(`UPDATE ${usersTable}
-        SET Organizations='${JSON.stringify(organizations)}'`);
-      console.log(writeTx);
-      return writeTx;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const changeAccess = async (organizations) => {};
 
   const getRecord = async (address) => {
     const wallet = await web3Modal.connect();
@@ -280,26 +266,7 @@ const Layout = ({ children }: Props) => {
       console.log(error);
     }
   };
-  const createTable = async () => {
-    try {
-      console.log("CREATING TABLE ..........");
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      console.log(tbl, "THIS IS THE TBL");
-      // const { name, txnHash } = await tbl.create(
-      //   `id text,bio text, handle text, dp text, banner text, organizations text, verified text, primary key (id)`, // Table schema definition
-      //   `users` // Optional prefix; used to define a human-readable string
-      // );
-      const { name, txnHash } = await tbl.create(
-        `id text, name text,description text,dp text,banner text, address text,patients text,verified text,owner text, primary key (id)`, // Table schema definition
-        `organizations` // Optional prefix; used to define a human-readable string
-      );
-
-      console.log(name, txnHash, "HERE IS THE RESPONSE");
-    } catch (error) {
-      console.log(error, "THIS IS THE ERROR ");
-    }
-  };
+  const createTable = async () => {};
 
   const getOrganizations = async () => {
     try {
@@ -329,38 +296,32 @@ const Layout = ({ children }: Props) => {
       console.log(err);
     }
   };
-  const updateOrganization = async (organization) => {
-    try {
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const writeTx = await tbl.write(`UPDATE ${organizationsTable}
-    SET Name='${organization.name}', Dp='${organization.dp}', Banner='${organization.banner}',
-    WHERE id = '${organization.id}'`);
-      console.log(writeTx);
-      return writeTx;
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  const updateOrganization = async (organization) => {};
 
   const createOrganization = async (organization) => {
     const unique_id = uuid();
     console.log(organization, "THIS IS THE ORGANIZATION");
-    try {
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const writeTx = await tbl.write(
-        `INSERT INTO ${organizationsTable} VALUES ('${unique_id.toString()}', '${
-          organization.name
-        }', '${organization.description}','${organization.dp}','${
-          organization.banner
-        }','${organization.address}','','false','${organization.owner}')`
-      );
 
-      console.log(writeTx);
-    } catch (err) {
-      console.log(err);
-    }
+    const signer = tblWallet.connect(tblProvider);
+    const db = new Database({ signer });
+
+    const { meta: insert } = await db
+      .prepare(
+        `INSERT INTO ${organizationsTable} (id, name, description, dp, banner, address, verified, owner) VALUES (?, ?, ?, ?, ?);`
+      )
+      .bind(
+        unique_id.toString(),
+        organization?.name,
+        organization?.description,
+        organization?.dp,
+        organization?.banner,
+        organization?.address,
+        false,
+        organization?.owner
+      )
+      .run();
+    await insert?.txn?.wait();
+    notify({ title: "Organization created successfully", type: "success" });
   };
   const createRecord = async (tokenURI) => {
     const wallet = await web3Modal.connect();
@@ -396,25 +357,9 @@ const Layout = ({ children }: Props) => {
       console.log(error);
     }
   };
-  const verifyUser = async (account) => {
-    const signer = tblWallet.connect(tblProvider);
-    const tbl = await connect({ signer });
-    const writeTx = await tbl.write(`UPDATE ${usersTable}
-    SET Verified='true',
-    WHERE id = '${account}'`);
-    console.log(writeTx);
-    return writeTx;
-  };
+  const verifyUser = async (account) => {};
 
-  const verifyOrganization = async (account) => {
-    const signer = tblWallet.connect(tblProvider);
-    const tbl = await connect({ signer });
-    const writeTx = await tbl.write(`UPDATE ${organizationsTable}
-    SET Verified='true',
-    WHERE id = '${account}'`);
-    console.log(writeTx);
-    return writeTx;
-  };
+  const verifyOrganization = async (account) => {};
   return (
     <StyledLayout>
       <AppContext.Provider

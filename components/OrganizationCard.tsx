@@ -8,29 +8,26 @@ import AppContext from "../context/AppContext";
 const OrganizationCard = ({ organization }) => {
   const { theme, currentAccount } = useContext(AppContext);
   const router = useRouter();
-  console.log(
-    "HERE IS THE ORGANIZATIONS IN THE ORGANIZATIONS CARD",
-    organization
-  );
+
   return (
     <StyledOrganizationCard
       theme_={theme}
       onClick={() =>
-        router.push(`/organizations/${organization?.[0] || "5729"}`)
+        router.push(`/organizations/${organization?.id || "5729"}`)
       }
     >
-      <img src={organization?.[3] || "/images/yooci.png"} alt="img" />
+      <img src={organization?.dp || "/images/yooci.png"} alt="img" />
       <div className="nft-desc">
         <span className="title">
-          <h3>{organization?.[1] || "Yooci"}</h3>
+          <h3>{organization?.name || "Yooci"}</h3>
           <h4></h4>
         </span>
 
         <span className="sale">
           <span className="author">
             <p>
-              {organization?.[9]?.slice(0, 4) || "0x87b0B98"}...
-              {organization?.[9]?.slice(-4) || "C24eee1Ce"}
+              {organization?.owner?.slice(0, 4) || "0x87b0B98"}...
+              {organization?.owner?.slice(-4) || "C24eee1Ce"}
             </p>{" "}
           </span>{" "}
           <p>Owner</p>

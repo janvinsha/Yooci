@@ -32,7 +32,7 @@ export default function Organizations() {
         </div>
 
         <div className="cards">
-          {organizationz?.map((organization: any, i) => (
+          {organizations?.map((organization: any, i) => (
             <OrganizationCard organization={organization} key={i} />
           ))}
         </div>

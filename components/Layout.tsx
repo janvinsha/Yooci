@@ -183,15 +183,16 @@ const Layout = ({ children }: Props) => {
     poll();
   }, []);
 
-  const getProfile = async (id) => {
+  const getProfile = async () => {
     try {
       const db = Database.readOnly("maticmum"); // Polygon Mumbai testnet
       // id int, address text, bio text, handle text
       console.log("GETTING PROFILE........");
       const { results } = await db
-        .prepare(`SELECT * FROM ${usersTable} WHERE id = '${id}'`)
+        .prepare(`SELECT * FROM ${usersTable} WHERE id = '${currentAccount}'`)
         .all();
       console.log("WHAT IS THE GETPROFILE RETURNING", results);
+
       return results;
     } catch (err) {
       console.log(err), "THIS IS THE ERROR";
@@ -208,14 +209,16 @@ const Layout = ({ children }: Props) => {
         console.log("CREATING BECAUSE NO USER FOUND", profile);
         const { meta: insert } = await db
           .prepare(
-            `INSERT INTO ${usersTable} (id, bio, handle, dp, banner) VALUES (?, ?, ?, ?, ?);`
+            `INSERT INTO ${usersTable} (id, bio, handle, dp, banner,organizations, verified) VALUES (?, ?, ?, ?, ?,?,?);`
           )
           .bind(
             profile.id,
             profile.bio,
             profile.handle,
             profile.dp,
-            profile.banner
+            profile.banner,
+            "",
+            false
           )
           .run();
         await insert?.txn?.wait();
@@ -247,7 +250,25 @@ const Layout = ({ children }: Props) => {
     }
   };
 
-  const changeAccess = async (organizations) => {};
+  const changeAccess = async (organizations) => {
+    try {
+      const signer = tblWallet.connect(tblProvider);
+      const db = new Database({ signer });
+
+      const { meta: update } = await db
+        .prepare(
+          `UPDATE 
+        ${usersTable} SET organizations = ?2 WHERE id = ?1`
+        )
+        .bind(currentAccount, JSON.stringify(organizations))
+        .run();
+
+      await update?.txn?.wait();
+      return writeTx;
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const getRecord = async (address) => {
     const wallet = await web3Modal.connect();
@@ -266,7 +287,6 @@ const Layout = ({ children }: Props) => {
       console.log(error);
     }
   };
-  const createTable = async () => {};
 
   const getOrganizations = async () => {
     try {
@@ -323,6 +343,22 @@ const Layout = ({ children }: Props) => {
     await insert?.txn?.wait();
     notify({ title: "Organization created successfully", type: "success" });
   };
+
+  const createTable = async () => {
+    try {
+      const signer = tblWallet.connect(tblProvider);
+      const db = new Database({ signer });
+
+      const { meta: create } = await db
+        .prepare(
+          "CREATE TABLE organizations (id integer primary key, name text, description text, dp text, banner text, address text, verified text, owner text);"
+        )
+        .run();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   const createRecord = async (tokenURI) => {
     const wallet = await web3Modal.connect();
     const tProvider = new ethers.providers.Web3Provider(wallet);
@@ -357,9 +393,43 @@ const Layout = ({ children }: Props) => {
       console.log(error);
     }
   };
-  const verifyUser = async (account) => {};
+  const verifyUser = async (account) => {
+    try {
+      const signer = tblWallet.connect(tblProvider);
+      const db = new Database({ signer });
 
-  const verifyOrganization = async (account) => {};
+      const { meta: update } = await db
+        .prepare(
+          `UPDATE 
+        ${usersTable} SET verified = ?2 WHERE id = ?1`
+        )
+        .bind(account, true)
+        .run();
+
+      await update?.txn?.wait();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const verifyOrganization = async (account) => {
+    try {
+      const signer = tblWallet.connect(tblProvider);
+      const db = new Database({ signer });
+
+      const { meta: update } = await db
+        .prepare(
+          `UPDATE 
+        ${organizationsTable} SET verified = ?2 WHERE id = ?1`
+        )
+        .bind(account, true)
+        .run();
+
+      await update?.txn?.wait();
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <StyledLayout>
       <AppContext.Provider

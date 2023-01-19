@@ -17,7 +17,7 @@
     "@lit-protocol/sdk-browser": "^1.1.225",
     "@mui/icons-material": "^5.8.4",
     "@mui/material": "^5.8.7",
-    "@tableland/sdk": "^3.1.7",
+    "@tableland/sdk": "^4.0.0-pre.3",
     "@types/react-lottie": "^1.2.6",
     "@uauth/js": "^2.3.0",
     "@uauth/web3modal": "^2.2.0",

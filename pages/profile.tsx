@@ -209,27 +209,19 @@ export default function Profile() {
         <div className="profile">
           <div className="photo-cont">
             <img
-              src={
-                foundUser?.length > 2
-                  ? `${foundUser?.[4]}`
-                  : "/images/swing.jpeg"
-              }
+              src={foundUser ? `${foundUser?.banner}` : "/images/swing.jpeg"}
               className="cover"
               alt="img"
             />
             <div className="dp">
               <img
-                src={
-                  foundUser?.length > 2
-                    ? `${foundUser?.[3]}`
-                    : "/images/swing.jpeg"
-                }
+                src={foundUser ? `${foundUser?.dp}` : "/images/swing.jpeg"}
                 className="cover img"
                 alt="img"
               />
               <span className="bio">
-                <h3>{foundUser?.length > 2 ? foundUser?.[2] : "Comrade"}</h3>
-                <p>{foundUser?.[1]}</p>
+                <h3>{foundUser ? foundUser?.handle : "Comrade"}</h3>
+                <p>{foundUser?.bio}</p>
               </span>
             </div>
             <div className="dpBtns">

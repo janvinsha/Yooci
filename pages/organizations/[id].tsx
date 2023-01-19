@@ -71,11 +71,9 @@ export default function Profile() {
   }, [currentAccount]);
 
   const getOrganizationDetails = async () => {
-    if (currentAccount) {
-      const res = await getOrganization(`${orgId}`);
-      console.log("GET PRFOILE RESPOMSE HERE", res);
-      setFoundOrg(res?.[0]);
-    }
+    const res = await getOrganization(`${orgId}`);
+    console.log("GET PRFOILE RESPOMSE HERE", res);
+    setFoundOrg(res?.[0]);
   };
   const getData = async () => {};
 
@@ -95,29 +93,23 @@ export default function Profile() {
         <div className="profile">
           <div className="photo-cont">
             <img
-              src={
-                foundOrg?.length > 2 ? `${foundOrg?.[4]}` : "/images/swing.jpeg"
-              }
+              src={foundOrg ? `${foundOrg?.banner}` : "/images/swing.jpeg"}
               className="cover"
               alt="img"
             />
             <div className="dp">
               <img
-                src={
-                  foundOrg?.length > 2
-                    ? `${foundOrg?.[3]}`
-                    : "/images/swing.jpeg"
-                }
+                src={foundOrg ? `${foundOrg?.dp}` : "/images/swing.jpeg"}
                 className="cover img"
                 alt="img"
               />
               <span className="bio">
-                <h3>{foundOrg?.length > 2 ? foundOrg?.[2] : "Yooci Org"}</h3>
-                <p>{foundOrg?.[1]}</p>
+                <h3>{foundOrg?.name}</h3>
+                <p>{foundOrg ? foundOrg?.description : "Yooci Org"} </p>
               </span>
             </div>
             <div className="dpBtns">
-              {currentAccount == foundOrg?.[5] && (
+              {currentAccount == foundOrg?.owner && (
                 <button
                   className="secondary-btn"
                   onClick={() => setProfileModal(true)}
@@ -125,7 +117,7 @@ export default function Profile() {
                   Edit Organization
                 </button>
               )}
-              {currentAccount == foundOrg?.[5] && (
+              {currentAccount == foundOrg?.owner && (
                 <div className="secondary-btn">
                   Verify Account
                   <WorldIDWidget
@@ -156,7 +148,7 @@ export default function Profile() {
                 <div className="line"></div>
               </span>
             </span>
-            <div className="section_2">
+            {/* <div className="section_2">
               {activeTab === "User Records" ? (
                 <div className="records">
                   {userRecords.map((record, i) => (
@@ -206,7 +198,7 @@ export default function Profile() {
               ) : (
                 ""
               )}
-            </div>
+            </div> */}
           </div>
         </div>
       </>

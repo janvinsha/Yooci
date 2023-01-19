@@ -25,7 +25,7 @@ export default function Home() {
     <StyledHome theme_={theme}>
       <div className="desc">
         <h2>
-          Yooci is blockchain application that utilizes Nfts to store health
+          Yooci is a blockchain application that utilizes Nfts to store health
           records that are only accessible to the owner or organizations given
           access to by the user
         </h2>

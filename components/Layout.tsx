@@ -10,6 +10,7 @@ import CoinbaseWalletSDK from "@coinbase/wallet-sdk";
 import styled from "styled-components";
 import { motion } from "framer-motion";
 import { v4 as uuid } from "uuid";
+import { Database } from "@tableland/sdk";
 import Header from "./Header";
 import AppContext from "../context/AppContext";
 import { GlobalStyle } from "../components";
@@ -184,15 +185,14 @@ const Layout = ({ children }: Props) => {
 
   const getProfile = async (id) => {
     try {
+      const db = Database.readOnly("maticmum"); // Polygon Mumbai testnet
       // id int, address text, bio text, handle text
       console.log("GETTING PROFILE........");
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const { rows } = await tbl.read(
-        `SELECT * FROM ${usersTable} WHERE id = '${id}'`
-      );
-      console.log(rows);
-      return rows;
+      const { results } = await db
+        .prepare(`SELECT * FROM ${usersTable} WHERE id = '${id}'`)
+        .all();
+      console.log("WHAT IS THE GETPROFILE RETURNING", results);
+      return results;
     } catch (err) {
       console.log(err), "THIS IS THE ERROR";
     }
@@ -200,33 +200,54 @@ const Layout = ({ children }: Props) => {
 
   const updateProfile = async (profile) => {
     try {
-      // const { name, txnHash } = await tbl.create(
-      //   `id text,bio text, handle text, dp text, banner text, organizations text, verified text, primary key (id)`, // Table schema definition
-      //   `users` // Optional prefix; used to define a human-readable string
-      // );
-      console.log("UPDATING PROFILE.................");
       const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
+      const db = new Database({ signer });
+      console.log("UPDATING PROFILE.................");
+
       const getResponse = await getProfile(profile.id);
       if (!getResponse[0]) {
         console.log("CREATING BECAUSE NO USER FOUND", profile);
-        const writeTx = await tbl.write(
-          `INSERT INTO ${usersTable} VALUES ('${profile.id}', '${profile.bio}', '${profile.handle}','${profile.dp}','${profile.banner}','','false')`
-        );
-        console.log(writeTx);
-        return writeTx;
+        const { meta: insert } = await db
+          .prepare(
+            `INSERT INTO ${usersTable} (id, bio, handle, dp, banner) VALUES (?, ?, ?, ?, ?);`
+          )
+          .bind(
+            profile.id,
+            profile.bio,
+            profile.handle,
+            profile.dp,
+            profile.banner
+          )
+          .run();
+        await insert?.txn?.wait();
       } else {
         console.log("UPDATING BECAUSE USER FOUND", profile);
-        const writeTx = await tbl.write(`UPDATE ${usersTable}
-        SET Handle='${profile.handle}', Bio='${profile.bio}', Dp='${profile.dp}', Banner='${profile.banner}',
-        WHERE id = '${profile.id}'`);
-        console.log(writeTx);
-        return writeTx;
+        const { meta: update } = await db
+          .prepare(
+            `UPDATE 
+            ${usersTable} SET bio = ?2, handle = ?3, dp = ?4, banner = 5? WHERE id = ?1'`
+          )
+          .bind(
+            profile.id,
+            profile.bio,
+            profile.handle,
+            profile.dp,
+            profile.banner
+          )
+          .run();
+
+        await update?.txn?.wait();
       }
+      const { results } = await db
+        .prepare(`SELECT * FROM ${usersTable};`)
+        .all();
+      notify({ title: "Profile edited successfully", type: "success" });
+      return results;
     } catch (error) {
       console.log(error);
     }
   };
+
   const changeAccess = async (organizations) => {
     try {
       console.log("UPDATING PROFILE.................");
@@ -282,30 +303,28 @@ const Layout = ({ children }: Props) => {
 
   const getOrganizations = async () => {
     try {
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const { rows } = await tbl.read(`SELECT * FROM ${organizationsTable}`);
-      console.log(
-        "THESE ARE THE ORGANIZATIONSSSSSJJJSSKKEEEELLOOERRPPPOOOO",
-        rows
-      );
-      return rows;
+      const db = Database.readOnly("maticmum"); // Polygon Mumbai testnet
+
+      const { results } = await db
+        .prepare(`SELECT * FROM ${organizationsTable};`)
+        .all();
+      console.log(results);
+
+      return results;
     } catch (err) {
       console.log(err);
     }
   };
   const getOrganization = async (orgId) => {
     try {
-      const signer = tblWallet.connect(tblProvider);
-      const tbl = await connect({ signer });
-      const { rows } = await tbl.read(
-        `SELECT * FROM ${organizationsTable} WHERE id =$${orgId}`
-      );
-      console.log(
-        "THESE ARE THE ORGANIZATIONSSSJJJSSKKEEEELLOOERRPPPOOOO",
-        rows
-      );
-      return rows;
+      const db = Database.readOnly("maticmum"); // Polygon Mumbai testnet
+
+      const { results } = await db
+        .prepare(`SELECT * FROM ${organizationsTable} WHERE id = '${orgId}'`)
+        .all();
+      console.log(results);
+
+      return results;
     } catch (err) {
       console.log(err);
     }
